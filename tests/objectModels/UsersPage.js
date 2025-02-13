@@ -1,28 +1,4 @@
-const baseUrl = 'http://localhost:5173/';
-
-export class MainPage {
-  constructor(page) {
-    this.page = page;
-    this.loginButton = this.page.getByRole('button', { name: 'Sign in' });
-    this.loginInput = this.page.getByRole('textbox', { name: 'Username' });
-    this.passwordInput = this.page.getByRole('textbox', { name: 'Password' });
-    this.menuList = this.page.locator('ul[role="menu"]');
-  }
-
-  async goto() {
-    await this.page.goto(`${baseUrl}`);
-  }
-
-  async login(username, password) {
-    await this.loginInput.fill(username);
-    await this.passwordInput.fill(password);
-    await this.loginButton.click();
-  }
-
-  async fillByLabel({ page, fieldName, label }) {
-    await page.getByRole('textbox', { name: fieldName }).fill(label);
-  }
-}
+import { baseUrl } from '../constants/baseurl';
 
 export class UsersPage {
   constructor(page) {
@@ -34,6 +10,7 @@ export class UsersPage {
     this.lastNameFormField = this.page.getByRole('textbox', { name: 'Last name' });
     this.saveUserButton = this.page.getByRole('button', { name: 'Save' });
     this.showInfoButton = this.page.getByRole('link', { name: 'Show' });
+    this.deleteUserButton = this.page.getByRole('button', { name: 'Delete' });
 
     //Table
     this.table = this.page.locator('table');
@@ -54,5 +31,11 @@ export class UsersPage {
     await this.emailFormField.fill(email);
     await this.firstNameFormField.fill(firstName);
     await this.lastNameFormField.fill(lastName);
+  }
+
+  async clearForm() {
+    await this.emailFormField.clear();
+    await this.firstNameFormField.clear();
+    await this.lastNameFormField.clear();
   }
 }
