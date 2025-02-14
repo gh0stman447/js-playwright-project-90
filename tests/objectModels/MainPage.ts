@@ -1,7 +1,14 @@
-import { baseUrl } from './constants/baseurl';
+import { Locator, Page } from '@playwright/test';
+import { baseUrl } from '../constants/baseUrl';
 
 export class MainPage {
-  constructor(page) {
+  public page: Page;
+  public loginButton: Locator;
+  public loginInput: Locator;
+  public passwordInput: Locator;
+  public menuList: Locator;
+
+  constructor(page: Page) {
     this.page = page;
     this.loginButton = this.page.getByRole('button', { name: 'Sign in' });
     this.loginInput = this.page.getByRole('textbox', { name: 'Username' });
@@ -13,13 +20,13 @@ export class MainPage {
     await this.page.goto(`${baseUrl}`);
   }
 
-  async login(username, password) {
+  async login(username: string, password: string) {
     await this.loginInput.fill(username);
     await this.passwordInput.fill(password);
     await this.loginButton.click();
   }
 
-  async fillByLabel({ page, fieldName, label }) {
+  async fillByLabel({ page, fieldName, label }: { page: Page; fieldName: string; label: string }) {
     await page.getByRole('textbox', { name: fieldName }).fill(label);
   }
 }

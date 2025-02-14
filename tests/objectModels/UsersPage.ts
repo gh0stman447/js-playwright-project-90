@@ -1,7 +1,21 @@
-import { baseUrl } from '../constants/baseurl';
+import { Locator, Page } from '@playwright/test';
+import { baseUrl } from '../constants/baseUrl';
 
 export class UsersPage {
-  constructor(page) {
+  public page: Page;
+  public createUserButton: Locator;
+  public emailFormField: Locator;
+  public firstNameFormField: Locator;
+  public lastNameFormField: Locator;
+  public saveUserButton: Locator;
+  public showInfoButton: Locator;
+  public table: Locator;
+  public tableHeader: Locator;
+  public tableBody: Locator;
+  public countItemsSelector: Locator;
+  public deleteUserButton: Locator;
+
+  constructor(page: Page) {
     //createUserForm
     this.page = page;
     this.createUserButton = this.page.getByRole('link', { name: 'Create' });
@@ -23,11 +37,11 @@ export class UsersPage {
     await this.page.goto(`${baseUrl}/#/users`);
   }
 
-  async fillByLabel({ page, fieldName, label }) {
+  async fillByLabel({ page, fieldName, label }: { page: Page; fieldName: string; label: string }) {
     await page.getByRole('textbox', { name: fieldName }).fill(label);
   }
 
-  async fillForm(email, firstName, lastName) {
+  async fillForm(email: string, firstName: string, lastName: string) {
     await this.emailFormField.fill(email);
     await this.firstNameFormField.fill(firstName);
     await this.lastNameFormField.fill(lastName);
