@@ -16,7 +16,6 @@ export class UsersPage {
   public deleteUserButton: Locator;
 
   constructor(page: Page) {
-    //createUserForm
     this.page = page;
     this.createUserButton = this.page.getByRole('link', { name: 'Create' });
     this.emailFormField = this.page.getByRole('textbox', { name: 'Email' });

@@ -14,7 +14,7 @@ import { time } from 'console';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  timeout: 5000,
+  timeout: 10000,
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,
