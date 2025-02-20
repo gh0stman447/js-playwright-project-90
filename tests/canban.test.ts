@@ -2,6 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { authUserData, newUserData, notCorrectUserData, otherUserData } from './constants/userData';
 import { MainPage, StatusesPage, UsersPage } from './objectModels';
 import { newStatusData } from './constants/statusData';
+import exp from 'constants';
 
 test.describe('test login', () => {
   let mainPage: MainPage;
@@ -342,7 +343,7 @@ test.describe('test statuses', () => {
     });
 
     test('should be edited status correctly', async () => {
-      const { tableBody, saveStatusButton } = statusesPage;
+      const { tableBody, saveStatusButton, page } = statusesPage;
       const firstStatus = tableBody.locator('tr').first();
 
       const nameOfFirstStatus = firstStatus.locator('td').nth(2);
@@ -353,10 +354,42 @@ test.describe('test statuses', () => {
       await statusesPage.fillStatusForm(newStatusData.name, newStatusData.slug);
       await saveStatusButton.click();
 
-      await statusesPage.page.getByRole('menuitem', { name: 'Task statuses' }).click();
+      await page.getByRole('menuitem', { name: 'Task statuses' }).click();
 
       await expect(nameOfFirstStatus).toHaveText(newStatusData.name);
       await expect(slugOfFirstStatus).toHaveText(newStatusData.slug);
+    });
+
+    test('should be deleted pare of statuses correctly', async () => {
+      const { tableBody, deleteStatusButton, page } = statusesPage;
+      const firstStatus = tableBody.locator('tr').nth(0);
+      await firstStatus.click();
+      await deleteStatusButton.click();
+      await page.getByRole('menuitem', { name: 'Task statuses' }).click();
+      await expect(tableBody.getByRole('row', { name: 'Draft', exact: true })).not.toBeVisible();
+      expect(await tableBody.locator('tr').count()).toBe(4);
+
+      const nextStatus = tableBody.locator('tr').nth(0);
+
+      await nextStatus.getByRole('checkbox').click();
+      await expect(page.locator('[data-test="bulk-actions-toolbar"]')).toBeVisible();
+      await deleteStatusButton.click();
+      await expect(tableBody.getByRole('row', { name: 'Draft', exact: true })).not.toBeVisible();
+      expect(await tableBody.locator('tr').count()).toBe(3);
+    });
+
+    test('should be deleted all statuses', async () => {
+      const { tableBody, tableHeader, deleteStatusButton, page } = statusesPage;
+
+      await tableHeader.getByRole('checkbox').click();
+      const allStatuses = tableBody.locator('tr');
+
+      for (let i = 0; i < (await allStatuses.count()); i++) {
+        await expect(allStatuses.nth(i).getByRole('checkbox')).toBeChecked();
+        await deleteStatusButton.click();
+        expect(await allStatuses.count()).toBe(0);
+        expect(page.getByText('No Task statuses yet.')).toBeVisible();
+      }
     });
   });
 });
