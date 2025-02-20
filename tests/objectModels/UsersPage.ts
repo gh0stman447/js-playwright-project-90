@@ -40,7 +40,7 @@ export class UsersPage {
     await page.getByRole('textbox', { name: fieldName }).fill(label);
   }
 
-  async fillForm(email: string, firstName: string, lastName: string) {
+  async fillUserForm(email: string, firstName: string, lastName: string) {
     await this.emailFormField.fill(email);
     await this.firstNameFormField.fill(firstName);
     await this.lastNameFormField.fill(lastName);
