@@ -113,6 +113,7 @@ test.describe('test users', () => {
         lastNameFormField,
         saveUserButton,
         deleteUserButton,
+        showInfoButton,
       } = usersPage;
 
       await tableBody.locator(`tr`).first().click();
@@ -122,6 +123,7 @@ test.describe('test users', () => {
         lastNameFormField,
         saveUserButton,
         deleteUserButton,
+        showInfoButton,
       ];
 
       for (const ui of uis) {
@@ -320,8 +322,14 @@ test.describe('test statuses', () => {
 
   test.describe('test edit statusForm', async () => {
     test('should edit statusForm display correctly', async ({ page }) => {
-      const { tableBody, nameFormField, slugFormField, saveStatusButton, deleteStatusButton } =
-        statusesPage;
+      const {
+        tableBody,
+        nameFormField,
+        slugFormField,
+        saveStatusButton,
+        deleteStatusButton,
+        showInfoButton,
+      } = statusesPage;
 
       const firstStatus = tableBody.locator('tr').first();
       const nameOfFirstStatus = await firstStatus.locator('td').nth(2).textContent();
@@ -329,9 +337,15 @@ test.describe('test statuses', () => {
       console.log(nameOfFirstStatus, slugOfFirstStatus);
 
       expect(await tableBody.locator('tr').first().click());
-      const uis = [nameFormField, slugFormField, saveStatusButton, deleteStatusButton];
+      const uis = [
+        nameFormField,
+        slugFormField,
+        saveStatusButton,
+        deleteStatusButton,
+        showInfoButton,
+      ];
 
-      for (let ui of uis) {
+      for (const ui of uis) {
         await expect(ui).toBeVisible();
       }
 
@@ -356,7 +370,9 @@ test.describe('test statuses', () => {
       await expect(nameOfFirstStatus).toHaveText(newStatusData.name);
       await expect(slugOfFirstStatus).toHaveText(newStatusData.slug);
     });
+  });
 
+  test.describe('test delete status', async () => {
     test('should be deleted pare of statuses correctly', async () => {
       const { tableBody, deleteStatusButton, page } = statusesPage;
       const firstStatus = tableBody.locator('tr').nth(0);
@@ -378,15 +394,18 @@ test.describe('test statuses', () => {
     test('should be deleted all statuses', async () => {
       const { tableBody, tableHeader, deleteStatusButton, page } = statusesPage;
 
+      const countOfStatusesBefore = await tableBody.locator('tr').count();
       await tableHeader.getByRole('checkbox').click();
       const allStatuses = tableBody.locator('tr');
 
       for (let i = 0; i < (await allStatuses.count()); i++) {
         await expect(allStatuses.nth(i).getByRole('checkbox')).toBeChecked();
-        await deleteStatusButton.click();
-        expect(await allStatuses.count()).toBe(0);
-        expect(page.getByText('No Task statuses yet.')).toBeVisible();
       }
+
+      await deleteStatusButton.click();
+      expect(await allStatuses.count()).toBe(0);
+      await expect(page.getByText('No Task statuses yet.')).toBeVisible();
+      await expect(page.getByText(`${countOfStatusesBefore} elements deleted`)).toBeVisible();
     });
   });
 });
@@ -478,6 +497,71 @@ test.describe('test labels', () => {
     test('should label list display correctly', async () => {
       const { table } = labelsPage;
       await expect(table).toHaveScreenshot();
+    });
+  });
+
+  test.describe('test edit labelForm', async () => {
+    test('should edit labelForm display correctly', async ({ page }) => {
+      const { tableBody, nameFormField, saveLabelButton, deleteLabelButton, showInfoButton } =
+        labelsPage;
+
+      const firstLabel = tableBody.locator('tr').first();
+      const nameOfFirtLabel = await firstLabel.locator('td').nth(2).textContent();
+
+      await firstLabel.click();
+      const uis = [nameFormField, saveLabelButton, deleteLabelButton, showInfoButton];
+
+      for (const ui of uis) {
+        await expect(ui).toBeVisible();
+      }
+
+      expect(await nameFormField.inputValue()).toBe(nameOfFirtLabel);
+    });
+
+    test('should edit labelForm and check the data display correclty', async () => {
+      const { nameFormField, saveLabelButton, tableBody, deleteLabelButton, page } = labelsPage;
+
+      const firstLabel = tableBody.locator('tr').first();
+      await firstLabel.click();
+      await expect(saveLabelButton).toBeDisabled();
+      await labelsPage.fillLabelForm(newLabelData.name);
+      await expect(saveLabelButton).toBeEnabled();
+      await saveLabelButton.click();
+      expect(await firstLabel.locator('td').nth(2).innerText()).toBe(newLabelData.name);
+    });
+  });
+
+  test.describe('test delete label', async () => {
+    test('should be deleted pare of labels correctly', async () => {
+      const { tableBody, deleteLabelButton, page } = labelsPage;
+      const firstLabel = tableBody.locator('tr').first();
+      const countOfLabelsBefore = await tableBody.locator('tr').count();
+      const nameOfFirstLabel = (await firstLabel.locator('td').nth(2).textContent()) ?? '';
+      await firstLabel.click();
+      await deleteLabelButton.click();
+      await page.getByRole('menuitem', { name: 'Labels' }).click();
+      await expect(tableBody.getByRole('row', { name: nameOfFirstLabel })).not.toBeVisible();
+
+      const countOfLabelsAfter = await tableBody.locator('tr').count();
+      expect(countOfLabelsAfter).toBe(countOfLabelsBefore - 1);
+    });
+
+    test('should be deleted all labels', async () => {
+      const { tableBody, tableHeader, deleteLabelButton, page } = labelsPage;
+
+      const countOfLabelsBefore = await tableBody.locator('tr').count();
+      await tableHeader.getByRole('checkbox').click();
+      const allLabels = tableBody.locator('tr');
+
+      for (let i = 0; i < (await allLabels.count()); i++) {
+        await expect(allLabels.nth(i).getByRole('checkbox')).toBeChecked();
+      }
+
+      await deleteLabelButton.click();
+
+      expect(await allLabels.count()).toBe(0);
+      await expect(page.getByText('No labels yet')).toBeVisible();
+      await expect(page.getByText(`${countOfLabelsBefore} elements deleted`)).toBeVisible();
     });
   });
 });
