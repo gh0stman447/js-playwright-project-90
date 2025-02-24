@@ -1,8 +1,9 @@
 import { test, expect, Page } from '@playwright/test';
 import { authUserData, newUserData, notCorrectUserData, otherUserData } from './constants/userData';
-import { MainPage, StatusesPage, UsersPage } from './objectModels';
+import { LabelsPage, MainPage, StatusesPage, UsersPage } from './objectModels';
 import { newStatusData } from './constants/statusData';
-import exp from 'constants';
+import { login } from './utils';
+import { newLabelData } from './constants/labelData';
 
 test.describe('test login', () => {
   let mainPage: MainPage;
@@ -29,9 +30,7 @@ test.describe('test users', () => {
   let usersPage: UsersPage;
 
   test.beforeEach(async ({ page }) => {
-    const mainPage = new MainPage(page);
-    await mainPage.goto();
-    await mainPage.login(authUserData.username, authUserData.password);
+    await login(page);
     usersPage = new UsersPage(page);
     await usersPage.goto();
   });
@@ -98,9 +97,9 @@ test.describe('test users', () => {
       for (let i = 1; i <= rows; i++) {
         const currentRow = tableBody.locator(`tr:nth-child(${i})`);
 
-        expect(await currentRow.locator('td:nth-child(3)')).not.toBe('');
-        expect(await currentRow.locator('td:nth-child(4)')).not.toBe('');
-        expect(await currentRow.locator('td:nth-child(5)')).not.toBe('');
+        expect(currentRow.locator('td:nth-child(3)')).not.toBe('');
+        expect(currentRow.locator('td:nth-child(4)')).not.toBe('');
+        expect(currentRow.locator('td:nth-child(5)')).not.toBe('');
       }
     });
   });
@@ -244,9 +243,7 @@ test.describe('test statuses', () => {
   let statusesPage: StatusesPage;
 
   test.beforeEach(async ({ page }) => {
-    const mainPage = new MainPage(page);
-    await mainPage.goto();
-    await mainPage.login(authUserData.username, authUserData.password);
+    await login(page);
     statusesPage = new StatusesPage(page);
     await statusesPage.goto();
   });
@@ -288,7 +285,7 @@ test.describe('test statuses', () => {
   });
 
   test.describe('test status list', () => {
-    test('should status list display correctly', async ({ page }) => {
+    test('should status list display correctly', async () => {
       const { tableHeader, tableBody, table } = statusesPage;
       const headerItems = await tableHeader.locator('th').allTextContents();
       expect(headerItems).toEqual(['', 'Id', 'Name', 'Slug', 'Created at']);
@@ -390,6 +387,97 @@ test.describe('test statuses', () => {
         expect(await allStatuses.count()).toBe(0);
         expect(page.getByText('No Task statuses yet.')).toBeVisible();
       }
+    });
+  });
+});
+
+test.describe('test labels', () => {
+  let labelsPage: LabelsPage;
+
+  test.beforeEach(async ({ page }) => {
+    await login(page);
+    labelsPage = new LabelsPage(page);
+    await labelsPage.goto();
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.close();
+  });
+
+  test.describe('test create statusLabel', () => {
+    test('should createStutusButton display', async () => {
+      const { createLabelButton } = labelsPage;
+      await expect(createLabelButton).toBeVisible();
+    });
+
+    test('should statusLabel display correctly', async () => {
+      const { saveLabelButton, nameFormField, tableBody } = labelsPage;
+
+      expect(await tableBody.locator('tr').first().click());
+      await expect(saveLabelButton).toBeVisible();
+      await expect(nameFormField).toBeVisible();
+    });
+
+    test('should create new statusLabel and check the data display correclty', async () => {
+      const { tableBody, createLabelButton, saveLabelButton, page } = labelsPage;
+      const countOfLabelsBefore = await tableBody.locator('tr').count();
+      await createLabelButton.click();
+      await labelsPage.fillLabelForm(newLabelData.name);
+      await saveLabelButton.click();
+      await page.getByRole('menuitem', { name: 'Labels' }).click();
+      const countOfLabelsAfter = await tableBody.locator('tr').count();
+
+      expect(countOfLabelsAfter).toBe(countOfLabelsBefore + 1);
+
+      const newLabel = tableBody.getByRole('row', { name: newLabelData.name });
+
+      await expect(newLabel).toBeVisible();
+      expect(await newLabel.locator('td').nth(2).innerText()).toBe(newLabelData.name);
+    });
+  });
+
+  test.describe('test label list', async () => {
+    test('should table header display correctly', async () => {
+      const { tableHeader } = labelsPage;
+
+      const headerItems = await tableHeader.locator('th').allTextContents();
+      expect(headerItems).toEqual(['', 'Id', 'Name', 'Created at']);
+
+      const checkbox = tableHeader.getByRole('checkbox');
+
+      await expect(checkbox).toBeVisible();
+      await expect(checkbox).not.toBeChecked();
+    });
+
+    test('should list body display correctly', async () => {
+      const { tableBody } = labelsPage;
+
+      const countOfItemsInTable = await tableBody.locator('tr').count();
+      expect(countOfItemsInTable).toBe(5);
+
+      for (let i = 1; i <= countOfItemsInTable; i++) {
+        const currentRow = tableBody.locator(`tr:nth-child(${i})`);
+
+        const checkbox = currentRow.locator('td').nth(0).getByRole('checkbox');
+        const id = currentRow.locator('td').nth(1);
+        const name = currentRow.locator('td').nth(2);
+        const createdAt = currentRow.locator('td').nth(3);
+
+        const contents = [checkbox, id, name, createdAt];
+
+        for (let j = 0; j < contents.length; j++) {
+          if (j === 0) {
+            await expect(checkbox).not.toBeChecked();
+          }
+          await expect(contents[j]).toBeVisible();
+          await expect(contents[j]).not.toBeEmpty();
+        }
+      }
+    });
+
+    test('should label list display correctly', async () => {
+      const { table } = labelsPage;
+      await expect(table).toHaveScreenshot();
     });
   });
 });
