@@ -25,8 +25,4 @@ export class MainPage {
     await this.passwordInput.fill(password);
     await this.loginButton.click();
   }
-
-  async fillByLabel({ page, fieldName, label }: { page: Page; fieldName: string; label: string }) {
-    await page.getByRole('textbox', { name: fieldName }).fill(label);
-  }
 }

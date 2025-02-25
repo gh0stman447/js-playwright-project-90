@@ -20,7 +20,7 @@ export class LabelsPage {
     this.saveLabelButton = this.page.getByRole('button', { name: 'Save' });
     this.deleteLabelButton = this.page.getByRole('button', { name: 'Delete' });
     this.showInfoButton = this.page.getByRole('link', { name: 'Show' });
-    
+
     //Table
     this.table = this.page.locator('table');
     this.tableHeader = this.page.locator('table thead');
@@ -30,10 +30,6 @@ export class LabelsPage {
 
   async goto() {
     await this.page.goto(`${baseUrl}/#/labels`);
-  }
-
-  async fillByLabel({ page, fieldName, label }: { page: Page; fieldName: string; label: string }) {
-    await page.getByRole('textbox', { name: fieldName }).fill(label);
   }
 
   async fillLabelForm(name: string) {

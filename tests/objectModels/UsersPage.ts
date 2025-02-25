@@ -36,10 +36,6 @@ export class UsersPage {
     await this.page.goto(`${baseUrl}/#/users`);
   }
 
-  async fillByLabel({ page, fieldName, label }: { page: Page; fieldName: string; label: string }) {
-    await page.getByRole('textbox', { name: fieldName }).fill(label);
-  }
-
   async fillUserForm(email: string, firstName: string, lastName: string) {
     await this.emailFormField.fill(email);
     await this.firstNameFormField.fill(firstName);

@@ -1,9 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
 import { authUserData, newUserData, notCorrectUserData, otherUserData } from './constants/userData';
-import { LabelsPage, MainPage, StatusesPage, UsersPage } from './objectModels';
+import { LabelsPage, MainPage, StatusesPage, TasksPage, UsersPage } from './objectModels';
 import { newStatusData } from './constants/statusData';
 import { login } from './utils';
 import { newLabelData } from './constants/labelData';
+import { newTaskData } from './constants/taskData';
 
 test.describe('test login', () => {
   let mainPage: MainPage;
@@ -429,10 +430,10 @@ test.describe('test labels', () => {
       await expect(createLabelButton).toBeVisible();
     });
 
-    test('should statusLabel display correctly', async () => {
-      const { saveLabelButton, nameFormField, tableBody } = labelsPage;
+    test('should statusLabelForm display correctly', async () => {
+      const { saveLabelButton, nameFormField, tableBody, createLabelButton } = labelsPage;
 
-      expect(await tableBody.locator('tr').first().click());
+      await createLabelButton.click();
       await expect(saveLabelButton).toBeVisible();
       await expect(nameFormField).toBeVisible();
     });
@@ -519,7 +520,7 @@ test.describe('test labels', () => {
     });
 
     test('should edit labelForm and check the data display correclty', async () => {
-      const { nameFormField, saveLabelButton, tableBody, deleteLabelButton, page } = labelsPage;
+      const { saveLabelButton, tableBody } = labelsPage;
 
       const firstLabel = tableBody.locator('tr').first();
       await firstLabel.click();
@@ -562,6 +563,70 @@ test.describe('test labels', () => {
       expect(await allLabels.count()).toBe(0);
       await expect(page.getByText('No labels yet')).toBeVisible();
       await expect(page.getByText(`${countOfLabelsBefore} elements deleted`)).toBeVisible();
+    });
+  });
+});
+
+test.describe('test tasks', () => {
+  let taskPage: TasksPage;
+
+  test.beforeEach(async ({ page }) => {
+    await login(page);
+    taskPage = new TasksPage(page);
+    await taskPage.goto();
+  });
+
+  test.describe('test create task', () => {
+    test('should createTaskButton display', async () => {
+      const { createTaskButton } = taskPage;
+      await expect(createTaskButton).toBeVisible();
+    });
+
+    test('should TaskForm display', async () => {
+      const {
+        assigneeFormField,
+        titleFormField,
+        contentFormField,
+        statusFormField,
+        labelFormField,
+        saveTaskButton,
+        createTaskButton,
+      } = taskPage;
+
+      const uis = [
+        assigneeFormField,
+        titleFormField,
+        contentFormField,
+        statusFormField,
+        labelFormField,
+      ];
+
+      await createTaskButton.click();
+      for (const ui of uis) {
+        await expect(ui).toBeVisible();
+      }
+      await expect(saveTaskButton).toBeDisabled();
+    });
+
+    test('should create new task and check the data display correclty', async () => {
+      const { createTaskButton, saveTaskButton, page } = taskPage;
+      const publishedColumn = page.locator('[data-rfd-droppable-id]').last();
+      const cards = publishedColumn.locator('[data-rfd-draggable-id]');
+      const countOfTasksBefore = await cards.count();
+
+      await createTaskButton.click();
+      await taskPage.fillTaskForm(newTaskData.Published);
+      await saveTaskButton.click();
+      await page.getByRole('menuitem', { name: 'Tasks' }).click();
+      const countOfTasksAfter = await cards.count();
+      console.log(countOfTasksBefore, countOfTasksAfter);
+
+      expect(countOfTasksAfter).toBe(countOfTasksBefore + 1);
+
+      const newTask = cards.locator('div');
+
+      await expect(newTask.getByText(newTaskData.Published.title)).toBeVisible();
+      await expect(newTask.getByText(newTaskData.Published.content)).toBeVisible();
     });
   });
 });

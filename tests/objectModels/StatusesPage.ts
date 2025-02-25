@@ -34,10 +34,6 @@ export class StatusesPage {
     await this.page.goto(`${baseUrl}/#/task_statuses`);
   }
 
-  async fillByLabel({ page, fieldName, label }: { page: Page; fieldName: string; label: string }) {
-    await page.getByRole('textbox', { name: fieldName }).fill(label);
-  }
-
   async fillStatusForm(name: string, slug: string) {
     await this.nameFormField.fill(name);
     await this.slugFormField.fill(slug);
