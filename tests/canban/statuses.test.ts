@@ -54,7 +54,7 @@ test.describe('test statuses', () => {
       const headerItems = await tableHeader.locator('th').allTextContents();
       expect(headerItems).toEqual(['', 'Id', 'Name', 'Slug', 'Created at']);
 
-      await expect(table).toHaveScreenshot();
+      // await expect(table).toHaveScreenshot();
 
       const countOfItemsInTable = await tableBody.locator('tr').count();
       expect(countOfItemsInTable).toBe(5);

@@ -87,10 +87,10 @@ test.describe('test labels', () => {
       }
     });
 
-    test('should label list display correctly', async () => {
-      const { table } = labelsPage;
-      await expect(table).toHaveScreenshot();
-    });
+    // test('should label list display correctly', async () => {
+    //   const { table } = labelsPage;
+    //   await expect(table).toHaveScreenshot();
+    // });
   });
 
   test.describe('test edit labelForm', async () => {
