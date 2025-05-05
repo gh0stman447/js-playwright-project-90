@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { login } from '../utils';
+import { login, wait } from '../utils';
 import { UsersPage } from '../objectModels';
 import { newUserData, notCorrectUserData, otherUserData } from '../constants/userData';
 
@@ -52,18 +52,38 @@ test.describe('test users', () => {
 
   test.describe('test userTable', async () => {
     test('should userTable display', async ({ page }) => {
-      const { table, tableHeader, tableBody, countItemsSelector } = usersPage;
+      const { table, tableHeader, tableBody } = usersPage;
 
       await expect(table).toBeVisible();
       const headerItems = await tableHeader.locator('th').allTextContents();
 
       expect(headerItems).toEqual(['', 'Id', 'Email', 'First name', 'Last name', 'Created at']);
       expect(await tableBody.locator('tr').count()).toBe(8);
+
+      // console.log(table, tableHeader, tableBody);
+    });
+
+    test('should userTable display 5 rows', async ({ page }) => {
+      const { tableBody, countItemsSelector } = usersPage;
       await countItemsSelector.click();
       await page.getByRole('option', { name: '5', exact: true }).click();
       expect(await tableBody.locator('tr').count()).toBe(5);
+    });
 
-      console.log(table, tableHeader, tableBody);
+    test('should userTable display left/right arrows', async ({ page }) => {
+      const { countItemsSelector } = usersPage;
+
+      await countItemsSelector.click();
+      await page.getByRole('option', { name: '5', exact: true }).click();
+
+      const leftArrow = page.getByLabel('Go to previous page');
+      const rightArrow = page.getByLabel('Go to next page');
+
+      await expect(leftArrow).toBeVisible();
+      await expect(leftArrow).toBeDisabled();
+
+      await expect(rightArrow).toBeVisible();
+      await expect(rightArrow).not.toBeDisabled();
     });
 
     test('should info about users in table display', async () => {
@@ -94,17 +114,19 @@ test.describe('test users', () => {
       } = usersPage;
 
       await tableBody.locator(`tr`).first().click();
-      const uis = [
-        emailFormField,
-        firstNameFormField,
-        lastNameFormField,
-        saveUserButton,
-        deleteUserButton,
-        showInfoButton,
+
+      const elements = [
+        { locator: emailFormField, name: 'Email field' },
+        { locator: firstNameFormField, name: 'First name field' },
+        { locator: lastNameFormField, name: 'Last name field' },
+        { locator: saveUserButton, name: 'Save button' },
+        { locator: deleteUserButton, name: 'Delete button' },
+        { locator: showInfoButton, name: 'Show info button' },
       ];
 
-      for (const ui of uis) {
-        await expect(ui).toBeVisible();
+      for (const { locator, name } of elements) {
+        // Будет выводить содержательные сведения об упавшем тесте (будет понятно, какой именно тест упал)
+        await expect(locator, `${name} should be visible`).toBeVisible();
       }
     });
 
@@ -140,7 +162,8 @@ test.describe('test users', () => {
 
       await usersPage.saveUserButton.click();
 
-      await expect(page.getByText('Element updatedUndo')).toBeVisible();
+      await wait(1000);
+      await expect(page.getByText('Element updated')).toBeVisible();
       await tableBody.locator('tr:nth-child(1)').click();
 
       await expect(emailFormField).toHaveValue(otherUserData.email);
@@ -173,7 +196,7 @@ test.describe('test users', () => {
   });
 
   test.describe('test delete user', async () => {
-    test('should delete user', async ({ page }) => {
+    test('should delete user by delete button', async ({ page }) => {
       const { tableBody, deleteUserButton } = usersPage;
 
       await tableBody.locator('tr').first().click();
@@ -181,15 +204,19 @@ test.describe('test users', () => {
 
       await expect(page.getByText('john@google.com', { exact: true })).not.toBeVisible();
       await expect(tableBody.locator('tr')).toHaveCount(7);
+    });
+
+    test('should delete user by checkbox', async ({ page }) => {
+      const { tableBody, deleteUserButton } = usersPage;
 
       await tableBody.locator('tr').nth(0).getByRole('checkbox').check();
       await deleteUserButton.click();
 
-      await expect(tableBody.locator('tr')).toHaveCount(6);
-      await expect(page.getByText('jack@yahoo.com', { exact: true })).not.toBeVisible();
+      await expect(tableBody.locator('tr')).toHaveCount(7);
+      await expect(page.getByText('john@google.com', { exact: true })).not.toBeVisible();
     });
 
-    test('should highlight all users when clicking on the delete button', async ({ page }) => {
+    test('should highlight all users after clicking on the delete button', async ({ page }) => {
       const { tableBody, tableHeader } = usersPage;
 
       await tableHeader.locator('th').getByRole('checkbox', { name: 'Select all' }).check();

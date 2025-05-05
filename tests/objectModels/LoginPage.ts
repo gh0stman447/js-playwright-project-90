@@ -1,19 +1,17 @@
 import { Locator, Page } from '@playwright/test';
 import { baseUrl } from '../constants/baseUrl';
 
-export class MainPage {
+export class LoginPage {
   public page: Page;
   public loginButton: Locator;
   public loginInput: Locator;
   public passwordInput: Locator;
-  public menuList: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.loginButton = this.page.getByRole('button', { name: 'Sign in' });
     this.loginInput = this.page.getByRole('textbox', { name: 'Username' });
     this.passwordInput = this.page.getByRole('textbox', { name: 'Password' });
-    this.menuList = this.page.locator('ul[role="menu"]');
   }
 
   async goto() {

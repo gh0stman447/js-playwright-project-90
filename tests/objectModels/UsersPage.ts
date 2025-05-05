@@ -17,12 +17,16 @@ export class UsersPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.createUserButton = this.page.getByRole('link', { name: 'Create' });
+
+    //Form fields
     this.emailFormField = this.page.getByRole('textbox', { name: 'Email' });
     this.firstNameFormField = this.page.getByRole('textbox', { name: 'First name' });
     this.lastNameFormField = this.page.getByRole('textbox', { name: 'Last name' });
+
+    //Buttons
     this.saveUserButton = this.page.getByRole('button', { name: 'Save' });
     this.showInfoButton = this.page.getByRole('link', { name: 'Show' });
+    this.createUserButton = this.page.getByRole('link', { name: 'Create' });
     this.deleteUserButton = this.page.getByRole('button', { name: 'Delete' });
 
     //Table

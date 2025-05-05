@@ -31,7 +31,7 @@ test.describe('test statuses', () => {
       }
     });
 
-    test('should create new status and check the data display correclty', async ({ page }) => {
+    test('should create new status correclty', async ({ page }) => {
       const { createStatusButton, saveStatusButton, fillStatusForm, tableBody } = statusesPage;
 
       await createStatusButton.click();
