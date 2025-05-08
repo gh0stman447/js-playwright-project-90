@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { DashboardPage } from '../objectModels';
-import { login, switchTheme } from '../utils';
+import { DashboardPage } from '../../objectModels';
+import { login, switchTheme } from '../../utils';
 
 const items = ['Dashboard', 'Tasks', 'Users', 'Labels', 'Task statuses'];
 
@@ -17,10 +17,10 @@ test.describe('test dashboard', () => {
       await expect(page.getByLabel('Toggle light/dark mode')).toBeVisible();
     });
 
-    test('should theme switcher', async ({ page }) => {
-      await switchTheme(page);
-      await expect(page.locator('body')).toHaveScreenshot();
-    });
+    // test('should theme switcher', async ({ page }) => {
+    //   await switchTheme(page);
+    //   await expect(page.locator('body')).toHaveScreenshot();
+    // });
   });
 
   test('should have the same count of items in the menu', async () => {

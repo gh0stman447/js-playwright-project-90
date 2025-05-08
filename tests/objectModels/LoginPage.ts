@@ -1,7 +1,8 @@
 import { Locator, Page } from '@playwright/test';
 import { baseUrl } from '../constants/baseUrl';
+import { IPage } from './IPage';
 
-export class LoginPage {
+export class LoginPage implements IPage {
   public page: Page;
   public loginButton: Locator;
   public loginInput: Locator;

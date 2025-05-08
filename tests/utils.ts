@@ -1,6 +1,9 @@
 import { Page, TestInfo } from '@playwright/test';
-import { LoginPage } from './objectModels';
+import { LabelsPage, LoginPage, StatusesPage, TasksPage, UsersPage } from './objectModels';
 import { authUserData } from './constants/userData';
+import { BasePage } from './objectModels/BasePage';
+import { TPage } from './types/page';
+import { IPage } from './objectModels/IPage';
 
 export const login = async (page: Page) => {
   const loginPage = new LoginPage(page);
@@ -10,6 +13,43 @@ export const login = async (page: Page) => {
 
 export const switchTheme = async (page: Page) => {
   await page.getByLabel('Toggle light/dark mode').click();
+};
+
+export const initializePage = async <T extends IPage>({
+  page,
+  type,
+  shouldLogin = true,
+}: {
+  page: Page;
+  type: TPage;
+  shouldLogin?: boolean;
+}) => {
+  let initPage: IPage;
+
+  shouldLogin && (await login(page));
+
+  switch (type) {
+    case 'users':
+      initPage = new UsersPage(page);
+      break;
+    case 'labels':
+      initPage = new LabelsPage(page);
+      break;
+    case 'tasks':
+      initPage = new TasksPage(page);
+      break;
+    case 'statuses':
+      initPage = new StatusesPage(page);
+      break;
+    case 'login':
+      initPage = new LoginPage(page);
+      break;
+    default:
+      throw new Error(`Unknown page type: ${type}`);
+  }
+
+  await initPage.goto();
+  return initPage as T;
 };
 
 /**
